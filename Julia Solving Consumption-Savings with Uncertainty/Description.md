@@ -11,4 +11,4 @@ b, \text { if unemployed }
 where
 $$\log \tilde{Y_t}=(1-\rho)\log\mu+\rho\log\tilde{Y_{t-1}}+\epsilon_t$$
 and
-$$\epsilon_t\in \mathbb{N}(0,\sigma^2)$$
+$$\epsilon_t\in \mathcal{N}(0,\sigma^2)$$
