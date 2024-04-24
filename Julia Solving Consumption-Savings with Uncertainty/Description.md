@@ -14,7 +14,7 @@ b, \text { if unemployed }
 $$
 where
 $$
-\log \tilde{Y_t}=(1-\rho)\log\mu+\rho\log\tilde{Y_{t-1}}+\epsilon_t
+\log \tilde{Y_t}=(1-\rho)\log\mu+\rho\log\tilde{Y}_{t-1}+\epsilon_t
 $$
 and
 $$
@@ -36,3 +36,24 @@ $$
 \gamma=2,\beta=0.98,\mu=1,b=0.4,\rho=0.9,\sigma^2=0.05,p=0.05,1=0.25,r=0.01.
 $$
 The notation of the parameters is consistent with that used in literature.
+
+
+
+To set up this problem, we write it as:
+$$
+\begin{align*}
+
+  V_e(A,Y)&=\max_{A'}\{\frac{(Y+A-\frac{A'}{1+r})^{1-\gamma}}{1-\gamma}+\beta (p \cdot \mathbb{E}V_u(A',b)+(1-p) \cdot \mathbb{E}V_e(A',Y'))\}\\
+
+  V_u(A,Y)&=\max_{A'}\{\frac{(b+A-\frac{A'}{1+r})^{1-\gamma}}{1-\gamma}+\beta ((1-q) \cdot \mathbb{E}V_u(A',b)+ q \cdot \mathbb{E}V_e(A',Y'))\}\\
+
+  \log Y' &= (1 - \rho ) \log \mu + \rho \log Y + \varepsilon' 
+
+\end{align*}
+$$
+
+The control variables are $A'$ and $Y'$.
+
+
+
+The constraints are $A'\geq 0$ and $C \geq 0(Y+A-\frac{A'}{1+r}\geq 0)$. 
