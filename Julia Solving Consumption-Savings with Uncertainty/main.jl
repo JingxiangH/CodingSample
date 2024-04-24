@@ -112,3 +112,107 @@ function interpolate_EV(EV::AbstractArray)
     EVinterp(Aₜ₊₁, lnYₜ) = sInterp(Aₜ₊₁, lnYₜ)
     return EVinterp
 end
+
+
+"""Vector Bellman function when Employed this period"""
+function BellmanE(EVe::AbstractArray, EVu::AbstractArray, Aₜ::AbstractArray, lnYₜ::AbstractArray, Aₜ₊₁::AbstractArray)
+    # EMPLOYED: vector A', lnY, EVe, EVu
+    C = c.(lnYₜ, Aₜ, Aₜ₊₁)
+    # Interpolate EVe and EVu at Aₜ₊₁, lnYₜ
+    EVe2 = interpolate_EV(EVe, lnYₜ, Aₜ₊₁)
+    EVu2 = interpolate_EV(EVu, lnYₜ, Aₜ₊₁)
+    # P(emp | emp) = 1-p; P(unemp | emp) = P
+    Ve = U.(C) .+ β*( (1-p)*EVe2 + p*EVu2 )
+    return Ve
+end
+
+"""Scalar Bellman function when Employed this period.
+    EVe, EVu are interpolation functions of (Aₜ₊₁, lnYₜ)
+"""
+function BellmanE(EVe::Function, EVu::Function, Aₜ::Real, lnYₜ::Real, Aₜ₊₁::Real)
+    # EMPLOYED: vector A', lnY, EVe, EVu
+    C = c(lnYₜ, Aₜ, Aₜ₊₁)
+    # P(emp | emp) = 1-p; P(unemp | emp) = P
+    Ve = U(C) + β*( (1-p)*EVe(Aₜ₊₁, lnYₜ) + p*EVu(Aₜ₊₁, lnYₜ) )
+    return Ve
+end
+
+
+"""Vector Bellman function when Unemployed this period"""
+function BellmanU(EVe::AbstractArray, EVu::AbstractArray, Aₜ::AbstractArray, Aₜ₊₁::AbstractArray)
+    # UNEMPLOYED: vector A', lnY=bb, EVe, EVu
+    C = c.(log(bb), Aₜ, Aₜ₊₁)
+    # Interpolate EVe and EVu at Aₜ₊₁, lnYₜ
+    lnYₜ = repeat([log(bb)], length(Aₜ))
+    EVe2 = interpolate_EV(EVe, lnYₜ, Aₜ₊₁)
+    EVu2 = interpolate_EV(EVu, lnYₜ, Aₜ₊₁)
+    # P(emp | unemp) = q; P(unemp | unemp) = 1-q
+    Vu = U.(C) .+ β*( q*EVe2 .+ (1-q)*EVu2 )
+    return Vu
+end
+
+"""Scalar Bellman function when Unemployed this period.
+    EVe, EVu are interpolation functions of (Aₜ₊₁, lnYₜ)
+"""
+function BellmanU(EVe::Function, EVu::Function, Aₜ::Real, Aₜ₊₁::Real)
+    # UNEMPLOYED: vector A', lnY=bb, EVe, EVu
+    C = c(log(bb), Aₜ, Aₜ₊₁)
+    # P(emp | unemp) = q; P(unemp | unemp) = 1-q
+    Vu = U(C) + β*( q*EVe(Aₜ₊₁, log(bb)) + (1-q)*EVu(Aₜ₊₁, log(bb)) )
+    return Vu
+end
+
+#============================
+        MaxBellman
+============================#
+function MyMaxSingleBellmanE(EVe, EVu, Aₜ, lnYₜ)
+    # Define a univariate function to maximize over Aₜ₊₁
+    to_maximize(Aₜ₊₁) = BellmanE(EVe, EVu, Aₜ, lnYₜ, Aₜ₊₁)
+    # Want there to be >0 consumption, so put upper bound
+    # at maximum A' that results in C>0, given lnYₜ, Aₜ
+    upperA = min(GridA_upper, max_Ap(lnYₜ, Aₜ) - 1e-3)
+    # Find the maximizing Aₜ₊₁ for this point in the Aₜ, lnYₜ grid
+    out = maximize(to_maximize, GridA_lower, upperA)
+    V = maximum(out)
+    Aₜ₊₁ = maximizer(out)
+    return Aₜ₊₁, V
+end
+
+function MyMaxSingleBellmanU(EVe, EVu, Aₜ)
+    # Define a univariate function to maximize over Aₜ₊₁
+    to_maximize(Aₜ₊₁) = BellmanU(EVe, EVu, Aₜ, Aₜ₊₁)
+    # Want there to be >0 consumption, so put upper bound
+    # at maximum A' that results in C>0, given lnYₜ=bb, Aₜ
+    upperA = min(GridA_upper, max_Ap(log(bb), Aₜ) - 1e-3)
+    # Find the maximizing Aₜ₊₁ for Aₜ, lnYₜ=bb
+    out = maximize(to_maximize, GridA_lower, upperA)
+    V = maximum(out)
+    Aₜ₊₁ = maximizer(out)
+    return Aₜ₊₁, V
+end
+
+function MyMaxBellmanE(EVe::AbstractArray, EVu::AbstractArray)
+    # Create interpolation functions (functions of lnYₜ, Aₜ₊₁)
+    EVefun = interpolate_EV(EVe)
+    EVufun = interpolate_EV(EVu)
+    # Define the function taking scalar Aₜ, lnY
+    MaxBellmanVector(Aₜ, lnYₜ) = MyMaxSingleBellmanE(EVefun, EVufun, Aₜ, lnYₜ)
+    # Broadcast over this function
+    out = MaxBellmanVector.(AA, YY)
+    maxA = [x[1] for x in out]
+    maxBell = [x[2] for x in out]
+    return maxBell, maxA
+end
+
+function MyMaxBellmanU(EVe::AbstractArray, EVu::AbstractArray)
+    # Create interpolation functions (functions of lnYₜ, Aₜ₊₁)
+    EVefun = interpolate_EV(EVe)
+    EVufun = interpolate_EV(EVu)
+    # Define the function taking scalar Aₜ, lnY
+    MaxBellmanVector(Aₜ) = MyMaxSingleBellmanU(EVefun, EVufun, Aₜ)
+    # Broadcast over this function
+    out = MaxBellmanVector.(AA)
+    maxA = [x[1] for x in out]
+    maxBell = [x[2] for x in out]
+    return maxBell, maxA
+end
