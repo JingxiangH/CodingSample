@@ -3,7 +3,6 @@
 ==========================#
 
 import Pkg
-Pkg.activate(pwd())
 
 try
     using Random, Parameters, Interpolations
