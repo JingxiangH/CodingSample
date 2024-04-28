@@ -5,13 +5,23 @@
 import Pkg
 
 try
-    using Random, Parameters, Interpolations
+    using Random, Parameters, Interpolations, Optim, Plots
+    using Optim: maximize, maximizer
 catch e
-    Pkg.add(["Random","Parameters","Interpolations"])
-    using Random, Parameters, Interpolations
+    Pkg.add(["Random","Parameters","Interpolations","Optim","Plots"])
+    using Random, Parameters, Interpolations, Optim, Plots
+    using Optim: maximizer, maximum
 end
 
+pyplot()
+
 include("Tauchen.jl")
+
+if Sys.iswindows()
+    cd("")
+else
+    cd("/Users/huangjingxiang/Library/CloudStorage/Dropbox/大三下/Coding Sample/Julia Solving Consumption-Savings with Uncertainty")
+end
 
 #============================
         Model Settings
@@ -215,4 +225,83 @@ function MyMaxBellmanU(EVe::AbstractArray, EVu::AbstractArray)
     maxA = [x[1] for x in out]
     maxBell = [x[2] for x in out]
     return maxBell, maxA
+end
+
+#============================
+        Iteration
+============================#
+
+"""Update value function and A' lists of vectors with new vectors"""
+function update_lists!(Velist, Vulist, Aelist, Aulist, Ve, Vu, Ae, Au)
+    append!(Velist, [Ve])
+    append!(Vulist, [Vu])
+    append!(Aelist, [Ae])
+    append!(Aulist, [Au])
+end
+function update_lists!(Velist, Vulist, Ve, Vu)
+    append!(Velist, [Ve])
+    append!(Vulist, [Vu])
+end
+
+"""Iterate over EV and Ap vectors to converge on the value function and Ap policy rule"""
+function MyBellmanIteration(; verbose=true)
+    # initial guess of the value functions (zero function)
+    MAXIT = 2_000
+    Velist, Vulist, Aelist, Aulist = [zeros(size(AA))], [zeros(size(AA))], [zeros(size(AA))], [zeros(size(AA))]
+    for it = 1:MAXIT
+        Ve, Ape = MyMaxBellmanE(Velist[end], Vulist[end])
+        Vu, Apu = MyMaxBellmanU(Velist[end], Vulist[end])
+
+        # take the expectation of the value function from the perspective of the previous A
+        # Need to reshape V into a 100x7 array where the rows correspond different levels
+        # of assets and the columns correspond to different levels of income.
+        # need to take the dot product of each row of the array with the appropriate column of the Markov chain transition matrix
+        EVe = reshape(Ve, NA, NY) * GridPY
+        EVu = reshape(Vu, NA, NY) * GridPY
+
+        # update our value functions
+        update_lists!(Velist, Vulist, Aelist, Aulist, EVe[:], EVu[:], Ape, Apu)
+
+        # see how much our policy rules and value functions have changed
+        Aetest = maximum(abs.(Aelist[end] - Aelist[end-1]))
+        Autest = maximum(abs.(Aulist[end] - Aulist[end-1]))
+        Vetest = maximum(abs.(Velist[end] - Velist[end-1]))
+        Vutest = maximum(abs.(Vulist[end] - Vulist[end-1]))
+        
+        if it % 50 == 0
+            verbose ? println("iteration $it, Vetest = $Vetest, Vutest = $Vutest, Aetest = $Aetest, Autest = $Autest") : nothing
+        end
+        if max(Aetest, Autest, Vetest, Vutest) < 1e-5
+            println("\nCONVERGED -- final iteration tests:")
+            println("iteration $it, Vetest = $Vetest, Vutest = $Vutest, Aetest = $Aetest, Autest = $Autest")
+            break
+        end
+
+        it == MAXIT ? println("\nMAX ITERATIONS REACHED ($MAXIT)") : nothing
+    end
+
+    return Velist, Vulist, Aelist, Aulist
+end
+
+RUNH = true
+if RUNH
+    outH = @time MyBellmanIteration();
+    VeH = outH[1][end]; VuH = outH[2][end]; ApeH = outH[3][end]; ApuH = outH[4][end];
+end
+
+PLOTH = true
+if PLOTH
+    angle0 = (-45,30)
+    plotargs = (camera=(-45, 20), xlabel="Y", ylabel="A",
+                legend=:none, aspect_ratio=[1,1,2])
+    pVe_H = surface(exp.(YY), AA, VeH, zlabel="Ve"; plotargs...)
+    pVu_H = surface(exp.(YY), AA, VuH, zlabel="Vu"; plotargs...)
+    pApe_H = surface(exp.(YY), AA, ApeH, zlabel="Ape"; plotargs...)
+    pApu_H = surface(exp.(YY), AA, ApuH, zlabel="Apu"; plotargs...)
+    pCe_H = surface(exp.(YY), AA, c.(YY, AA, ApeH), zlabel="Ce"; plotargs...)
+    pCu_H = surface(exp.(YY), AA, c.(log(bb), AA, ApuH), zlabel="Cu"; plotargs...)
+
+    pH1 = plot(pVe_H, pVu_H, pApe_H, pApu_H, pCe_H, pCu_H, 
+        layout=(3,2), size=(800, 1600))
+    savefig(pH1, "H-all_$GridA_upper")
 end
