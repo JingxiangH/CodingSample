@@ -46,7 +46,7 @@ plt.close()
 data = pd.read_csv('./Data/1_全球装机预测.csv')
 
 # 提取类别和各区域数据
-years = data['Year']
+years = data['年份']
 regions = data.columns[1:]
 
 # 绘制图表
