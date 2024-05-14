@@ -13,55 +13,78 @@ paths = {
 
 new_path = paths.get(platform.system(), os.getcwd())
 os.chdir(new_path)
-print(f"Intended working directory: {os.getcwd()}")
+# print(f"Intended working directory: {os.getcwd()}")
 
 chinese_font = FontProperties(fname='./Code/Songti.ttc')
 
-########### China PV New Installed Capacity and Forecast.png
-
-Data_Installed_Capacity = pd.read_csv('./Data/装机量.csv')
-years = Data_Installed_Capacity["Year"]
-conservative_scenario = Data_Installed_Capacity["Conservative_Scenario"]
-optimistic_scenario = Data_Installed_Capacity["Optimistic_Scenario"]
-
-# 绘制图表
-plt.figure(figsize=(6, 4))
-plt.plot(years, conservative_scenario, label='保守情形', marker='o', color='orange')
-plt.plot(years, optimistic_scenario, label='乐观情形', marker='o', color='red')
-# plt.title('2011-2030年中国光伏新增装机量及预测（单位：GW）', fontproperties=chinese_font)
-plt.xlabel('年份', fontproperties=chinese_font)
-plt.ylabel('装机量（GW）', fontproperties=chinese_font)
-plt.legend(prop=chinese_font)
-plt.grid(True)
-plt.xticks(ticks=np.arange(2011, 2031, 3), labels=np.arange(2011, 2031, 3))  # 每隔三年显示一次
-plt.xlim(2011, 2030)
-
-path = "./Figure/China PV New Installed Capacity and Forecast.png"
-plt.savefig(path, dpi=300)
-plt.close()
-
 ########### World PV New Installed Capacity and Forecast.png
 
-# 使用StringIO读取CSV数据
 data = pd.read_csv('./Data/1_全球装机预测.csv')
 
 # 提取类别和各区域数据
 years = data['年份']
+china = data['中国']
+world = data['世界']
+non_china = world - china
 regions = data.columns[1:]
 
-# 绘制图表
-plt.figure(figsize=(8, 5))
-for region in regions:
-    plt.plot(years, data[region], label=region)
+# 设置柱状图的宽度
+bar_width = 0.4
 
-# plt.title('全球各国各地区的光伏新增装机量 (单位: GW)', fontproperties=chinese_font)
-plt.xlabel('年份', fontproperties=chinese_font)
-plt.ylabel('装机量（GW）', fontproperties=chinese_font)
-plt.legend(prop=chinese_font, bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.grid(True)
-plt.xticks(ticks=np.arange(years.min(), years.max()+1, 1), labels=np.arange(years.min(), years.max()+1, 1), fontproperties=chinese_font)  # 每年显示一次
-plt.xlim(years.min(), years.max())
+# 绘制柱状图
+fig, ax = plt.subplots(figsize=(7, 4))
 
-# 保存图表，增加DPI以提高清晰度
+bar1 = ax.bar(years, china, bar_width, label='中国', color='green')
+bar2 = ax.bar(years, world - china, bar_width, bottom=china, label='全球（除中国外）', color='lightgreen')
+
+# 在每个柱子上显示总高度
+for i in range(len(years)):
+    total_height = china[i] + non_china[i]
+    ax.text(years[i], total_height + 5, f'{total_height:.1f}', ha='center', fontproperties=chinese_font)
+
+
+# 设置标题和标签
+# ax.set_title('全球光伏新增装机量 (单位: GW)', fontproperties=chinese_font)
+ax.set_xlabel('年份', fontproperties=chinese_font)
+ax.set_ylabel('装机量 (GW)', fontproperties=chinese_font)
+ax.legend(prop=chinese_font)
+plt.xticks(ticks=years, labels=years, fontproperties=chinese_font)
+
 path = "./Figure/World PV New Installed Capacity and Forecast.png"
 plt.savefig(path, dpi=300, bbox_inches='tight')
+plt.close()
+
+
+####################### LCOE
+### 数据来源：Lazard（./Raw Material/lazards-lcoeplus-april-2023.pdf）
+
+# 数据
+categories = ['Solar PV—Rooftop Residential', 'Solar PV—Community C&I', 
+              'Solar PV—Utility-Scale', 'Solar PV + Storage—Utility-Scale', 
+              'Geothermal', 'Wind—Onshore', 'Wind+Storage—Onshore', 'Wind—Offshore',
+              'Gas Peaking', 'Nuclear', 'Coal', 'Gas Combined Cycle']
+min_costs = [117, 49, 24, 46, 61, 24, 42, 72, 115, 141, 68, 39]
+max_costs = [282, 185, 96, 102, 102, 75, 114, 140, 221, 221, 166, 101]
+
+
+N = len(categories)
+fig, ax = plt.subplots(figsize=(10, 5))
+
+for i, (min_cost, max_cost) in enumerate(zip(min_costs, max_costs)):
+    ax.barh(categories[i], max_cost - min_cost, left=min_cost, color='skyblue', edgecolor='black')
+    ax.text(max_cost + 3, i, f'${max_cost}', va='center', ha='left', color='black')
+    ax.text(min_cost - 3, i, f'${min_cost}', va='center', ha='right', color='black')
+
+ax.set_xlabel('Leveled Cost of Energy ($/MWh)')
+
+# 设置图形的标题
+# ax.set_title('Levelized Cost of Energy Comparison—Unsubsidized Analysis')
+
+ax.grid(False)
+ax.set_xlim(0, 300)
+ax.invert_yaxis()
+
+plt.tight_layout()
+path = "./Figure/LCOE.png"
+plt.savefig(path, dpi=300, bbox_inches='tight')
+plt.close()
