@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties
-from io import StringIO
 
 # Set working directories
 paths = {
