@@ -1,6 +1,18 @@
+import os
+import platform
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties
+
+# Set working directories
+paths = {
+    "Darwin": "/Users/huangjingxiang/Library/CloudStorage/Dropbox/大三下/Coding Sample/Replication Package of IO Project/Code/",
+    "Windows": "C:\\Users\\iamja\\Dropbox\\大三下\\Coding Sample\\Replication Package of IO Project\\Code\\"
+}
+
+new_path = paths.get(platform.system(), os.getcwd())
+os.chdir(new_path)
+print(f"Intended working directory: {os.getcwd()}")
 
 chinese_font = FontProperties(fname='./Songti.ttc')
 
