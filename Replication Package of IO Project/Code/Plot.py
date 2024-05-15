@@ -71,7 +71,7 @@ N = len(categories)
 fig, ax = plt.subplots(figsize=(10, 5))
 
 for i, (min_cost, max_cost) in enumerate(zip(min_costs, max_costs)):
-    ax.barh(categories[i], max_cost - min_cost, left=min_cost, color='skyblue', edgecolor='black')
+    ax.barh(categories[i], max_cost - min_cost, left=min_cost, color='lightgreen', edgecolor='black')
     ax.text(max_cost + 3, i, f'${max_cost}', va='center', ha='left', color='black')
     ax.text(min_cost - 3, i, f'${min_cost}', va='center', ha='right', color='black')
 
