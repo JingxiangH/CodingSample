@@ -101,7 +101,7 @@ data2 = data2.sort_values('日期')
 
 # Plot the data
 plt.figure(figsize=(6, 4))
-plt.plot(data2['日期'], data2['价格（元/W）'])
+plt.plot(data2['日期'], data2['价格（元/W）'], color = "green")
 
 # Add labels and title
 # plt.xlabel('日期', fontproperties=chinese_font)
