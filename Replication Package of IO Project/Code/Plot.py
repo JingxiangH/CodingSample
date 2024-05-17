@@ -17,16 +17,16 @@ os.chdir(new_path)
 
 chinese_font = FontProperties(fname='./Code/Songti.ttc')
 
-########### World PV New Installed Capacity and Forecast.png
+################ World PV New Installed Capacity and Forecast.png
 
-data = pd.read_csv('./Data/1_全球装机预测.csv')
+data1 = pd.read_csv('./Data/1_全球装机预测.csv')
 
 # 提取类别和各区域数据
-years = data['年份']
-china = data['中国']
-world = data['世界']
+years = data1['年份']
+china = data1['中国']
+world = data1['世界']
 non_china = world - china
-regions = data.columns[1:]
+regions = data1.columns[1:]
 
 # 设置柱状图的宽度
 bar_width = 0.4
@@ -86,5 +86,33 @@ ax.invert_yaxis()
 
 plt.tight_layout()
 path = "./Figure/LCOE.png"
+plt.savefig(path, dpi=300, bbox_inches='tight')
+plt.close()
+
+##################### Price of PV Components
+## 数据来源：同花顺iFind
+
+data2 = pd.read_csv('./Data/2_光伏组件平均价格.csv')
+
+data2['日期'] = pd.to_datetime(data2['日期'])
+
+# Sort the data by date
+data2 = data2.sort_values('日期')
+
+# Plot the data
+plt.figure(figsize=(6, 4))
+plt.plot(data2['日期'], data2['价格（元/W）'])
+
+# Add labels and title
+# plt.xlabel('日期', fontproperties=chinese_font)
+plt.ylabel('价格（元/W）', fontproperties=chinese_font)
+# plt.title('光伏组件平均价格变化', fontproperties=chinese_font)
+plt.grid(True)
+
+# Show the plot
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+path = "./Figure/Price.png"
 plt.savefig(path, dpi=300, bbox_inches='tight')
 plt.close()
