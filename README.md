@@ -1,6 +1,6 @@
 # CodingSample
 
-I uploaded a few coding samples here. (Last update: Apr 23 2024)
+I uploaded a few coding samples here. (Last update: May 22 2024)
 
 ## Julia Solving Consumption-Saving Problem with Uncertainty
 
@@ -8,7 +8,7 @@ I uploaded a few coding samples here. (Last update: Apr 23 2024)
 
 I am going to solve a consumption-savings problem with
 
-* A tight borrowing constraint: the household is not allowed to borrow at all.
+* A tight borrowing constraint: the household is not allowed to borrow at all
 * Unemployment
 
 This work is originally an assignment of ECON202A UCB taught by Jon Steinsson in 2023 Fall. My original version is written in Matlab (Uploaded already), I am going to rewrite it in Julia here.
@@ -17,4 +17,4 @@ This work is originally an assignment of ECON202A UCB taught by Jon Steinsson in
 
 (FINISHED)
 
-This is a collaborative project with Shan Huang, focusing on Laplace New Energy Technology Co., Ltd. and examining the dynamics of China's photovoltaic cell industry. The outcome of the research is a 15,000-word report in Chinese.
+This is a collaborative project with Shan Huang, focusing on Laplace New Energy Technology Co., Ltd. and examining the dynamics of China's photovoltaic cell industry. I am responsible for all the figures and code here. The outcome of the research is a 15,000-word report in Chinese, which can be found on my personal website.
