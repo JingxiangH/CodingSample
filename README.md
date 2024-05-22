@@ -17,4 +17,4 @@ This work is originally an assignment of ECON202A UCB taught by Jon Steinsson in
 
 (FINISHED)
 
-This is a collaborative project with Shan Huang, focusing on Laplace New Energy Technology Co., Ltd. and examining the dynamics of China's photovoltaic cell industry. I am responsible for all the figures and code here. The outcome of the research is a 15,000-word report in Chinese, which can be found on my personal website.
+This is a collaborative project with Shan Huang, focusing on Laplace New Energy Technology Co., Ltd. and examining the dynamics of China's photovoltaic cell industry. I am responsible for all the figures and code here. The outcome of the research is a 15,000-word report in Chinese, which can be found on [here](https://jingxiangh.github.io/assets/IO_Project.pdf).
