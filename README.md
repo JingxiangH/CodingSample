@@ -1,4 +1,4 @@
-# CodingSample
+# Coding Samples
 
 I uploaded a few coding samples here. (Last update: May 22 2024)
 
