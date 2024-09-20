@@ -1,6 +1,6 @@
 # Coding Samples
 
-I uploaded a few coding samples here. (Last update: May 22 2024)
+I uploaded a few coding samples here. (Last update: Sep 2024)
 
 ## Julia Solving Consumption-Saving Problem with Uncertainty
 
